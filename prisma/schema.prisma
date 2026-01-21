@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id        Int       @id @default(autoincrement())
+  name      String
+  sku       String    @unique
+  inventory Inventory[]
+}
+
+model Location {
+  id        Int          @id @default(autoincrement())
+  name      String
+  type      LocationType
+  capacity  Int?
+  inventory Inventory[]
+
+  @@index([type])
+}
+
+enum LocationType {
+  WAREHOUSE
+  RETAIL_STORE
+}
+
+model Inventory {
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationId Int
+  quantity   Int      @default(0)
+
+  @@id([productId, locationId])
+  @@index([locationId])
+  @@index([productId])
+}

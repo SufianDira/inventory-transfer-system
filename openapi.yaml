@@ -1,0 +1,356 @@
+openapi: 3.0.3
+info:
+  title: Inventory Transfer System API
+  version: 1.0.0
+  description: |
+    API for transferring product stock between locations and viewing inventory per location.
+
+servers:
+  - url: /
+    description: Root
+
+tags:
+  - name: Transfers
+  - name: Inventory
+
+paths:
+  /transfer:
+    post:
+      tags: [Transfers]
+      summary: Transfer stock between locations
+      description: |
+        Transfers a quantity of a product from a source location to a destination location.
+
+        Rules enforced:
+        - IDs and quantity must be positive integers
+        - Source and destination locations must be different
+        - Product and both locations must exist
+        - Source location must have sufficient stock of the product to transfer
+        - Destination location capacity must not be exceeded
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequest"
+            examples:
+              valid:
+                summary: Valid request
+                value:
+                  productId: 12
+                  sourceLocationId: 1
+                  destinationLocationId: 8
+                  quantity: 5
+      responses:
+        "200":
+          description: Transfer successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferSuccessResponse"
+              examples:
+                success:
+                  summary: Successful transfer
+                  value:
+                    message: Transfer successful
+                    product:
+                      id: 12
+                      sku: SKU-0012
+                      name: Product Name
+                    sourceLocation:
+                      id: 1
+                      name: Warehouse 1
+                      type: WAREHOUSE
+                      productQuantityBefore: 20
+                      productQuantityAfter: 15
+                      capacity: 200
+                    destinationLocation:
+                      id: 8
+                      name: Retail Store 2
+                      type: RETAIL_STORE
+                      totalQuantityBefore: 40
+                      totalQuantityAfter: 45
+                      capacity: 50
+                    transferredQuantity: 5
+        "400":
+          description: Validation or business rule error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              examples:
+                invalid_int:
+                  summary: Invalid integer fields
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: productId
+                        message: productId must be a positive integer
+                same_location:
+                  summary: Destination must differ from source
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: destinationLocationId
+                        message: destinationLocationId must be different from sourceLocationId
+                product_not_found:
+                  summary: Product not found
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: productId
+                        message: Product 999 not found
+                location_not_found:
+                  summary: Location not found
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: sourceLocationId
+                        message: Location 123 not found
+                insufficient_stock:
+                  summary: Insufficient stock at source
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: quantity
+                        message: Insufficient stock at source. Available 2, requested 5
+                capacity_exceeded:
+                  summary: Capacity exceeded at destination
+                  value:
+                    message: Validation error
+                    errors:
+                      - field: destinationLocationId
+                        message: Capacity exceeded at destination. Current total 49, maximum capacity 50, requested additional 5
+
+  /inventory:
+    get:
+      tags: [Inventory]
+      summary: List inventory by location
+      description: |
+        Returns inventory breakdown per location including total quantity, capacity, and product rows.
+      responses:
+        "200":
+          description: Inventory list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationInventory"
+              examples:
+                inventory_list:
+                  summary: Example inventory response
+                  value:
+                    - id: 1
+                      name: Warehouse 1
+                      type: WAREHOUSE
+                      totalQuantity: 132
+                      capacity: 200
+                      products:
+                        - productId: 12
+                          sku: SKU-0012
+                          name: Product Name
+                          quantity: 15
+                    - id: 8
+                      name: Retail Store 2
+                      type: RETAIL_STORE
+                      totalQuantity: 45
+                      capacity: 50
+                      products:
+                        - productId: 12
+                          sku: SKU-0012
+                          name: Product Name
+                          quantity: 5
+
+components:
+  schemas:
+    TransferRequest:
+      type: object
+      required: [productId, sourceLocationId, destinationLocationId, quantity]
+      properties:
+        productId:
+          type: integer
+          example: 12
+          minimum: 1
+        sourceLocationId:
+          type: integer
+          example: 1
+          minimum: 1
+        destinationLocationId:
+          type: integer
+          example: 8
+          minimum: 1
+        quantity:
+          type: integer
+          example: 5
+          minimum: 1
+
+    TransferSuccessResponse:
+      type: object
+      required:
+        - message
+        - product
+        - sourceLocation
+        - destinationLocation
+        - transferredQuantity
+      properties:
+        message:
+          type: string
+          example: Transfer successful
+        product:
+          $ref: "#/components/schemas/ProductBrief"
+        sourceLocation:
+          $ref: "#/components/schemas/SourceLocationTransferInfo"
+        destinationLocation:
+          $ref: "#/components/schemas/DestinationLocationTransferInfo"
+        transferredQuantity:
+          type: integer
+          example: 5
+          minimum: 1
+
+    ProductBrief:
+      type: object
+      required: [id, sku, name]
+      properties:
+        id:
+          type: integer
+          example: 12
+        sku:
+          type: string
+          example: SKU-0012
+        name:
+          type: string
+          example: Product Name
+
+    SourceLocationTransferInfo:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - productQuantityBefore
+        - productQuantityAfter
+        - capacity
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Warehouse 1
+        type:
+          $ref: "#/components/schemas/LocationType"
+        productQuantityBefore:
+          type: integer
+          example: 20
+          minimum: 0
+        productQuantityAfter:
+          type: integer
+          example: 15
+          minimum: 0
+        capacity:
+          type: integer
+          nullable: true
+          example: 200
+
+    DestinationLocationTransferInfo:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - totalQuantityBefore
+        - totalQuantityAfter
+        - capacity
+      properties:
+        id:
+          type: integer
+          example: 8
+        name:
+          type: string
+          example: Retail Store 2
+        type:
+          $ref: "#/components/schemas/LocationType"
+        totalQuantityBefore:
+          type: integer
+          example: 40
+          minimum: 0
+        totalQuantityAfter:
+          type: integer
+          example: 45
+          minimum: 0
+        capacity:
+          type: integer
+          nullable: true
+          example: 50
+
+    LocationInventory:
+      type: object
+      required: [id, name, type, totalQuantity, capacity, products]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Warehouse 1
+        type:
+          $ref: "#/components/schemas/LocationType"
+        totalQuantity:
+          type: integer
+          example: 132
+          minimum: 0
+        capacity:
+          type: integer
+          nullable: true
+          example: 200
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/InventoryProductRow"
+
+    InventoryProductRow:
+      type: object
+      required: [productId, sku, name, quantity]
+      properties:
+        productId:
+          type: integer
+          example: 12
+        sku:
+          type: string
+          example: SKU-0012
+        name:
+          type: string
+          example: Product Name
+        quantity:
+          type: integer
+          example: 15
+          minimum: 0
+
+    ValidationErrorResponse:
+      type: object
+      required: [message, errors]
+      properties:
+        message:
+          type: string
+          example: Validation error
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: productId
+        message:
+          type: string
+          example: productId must be a positive integer
+
+    LocationType:
+      type: string
+      enum: [WAREHOUSE, RETAIL_STORE]
+      example: WAREHOUSE

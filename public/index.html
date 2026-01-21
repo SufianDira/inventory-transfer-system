@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Transfer System | Stock Management Dashboard</title>
+  <meta name="description" content="Manage and transfer inventory stock between warehouse and retail locations with real-time tracking and capacity monitoring.">
+  <meta property="og:title" content="Inventory Transfer System">
+  <meta property="og:description" content="Stock management dashboard for inventory transfers">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/favicon.ico">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Dark industrial-tech palette */
+      --background: 222 47% 8%;
+      --foreground: 210 40% 96%;
+      --card: 222 47% 11%;
+      --card-foreground: 210 40% 96%;
+      --popover: 222 47% 11%;
+      --popover-foreground: 210 40% 96%;
+      --primary: 174 72% 46%;
+      --primary-foreground: 222 47% 8%;
+      --secondary: 217 33% 17%;
+      --secondary-foreground: 210 40% 96%;
+      --muted: 217 33% 17%;
+      --muted-foreground: 215 20% 55%;
+      --accent: 217 33% 20%;
+      --accent-foreground: 210 40% 96%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 210 40% 96%;
+      --border: 217 33% 20%;
+      --input: 217 33% 14%;
+      --ring: 174 72% 46%;
+      --success: 142 76% 42%;
+      --warning: 38 92% 50%;
+      --radius: 0.75rem;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.6));
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.4);
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      color: hsl(var(--primary-foreground));
+    }
+
+    .header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .header-title p {
+      font-size: 0.875rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .btn-primary:hover {
+      background: hsl(var(--primary) / 0.9);
+      box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.5);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: hsl(var(--foreground));
+      border: 1px solid hsl(var(--border));
+    }
+
+    .btn-outline:hover {
+      background: hsl(var(--accent));
+      border-color: hsl(var(--accent));
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .btn-ghost:hover {
+      background: hsl(var(--accent));
+      color: hsl(var(--foreground));
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    /* Search & Filter */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.625rem 1rem 0.625rem 2.5rem;
+      font-size: 0.875rem;
+      background: hsl(var(--input));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      color: hsl(var(--foreground));
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+    }
+
+    .search-box input::placeholder {
+      color: hsl(var(--muted-foreground));
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.625rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: var(--radius);
+      background: hsl(var(--secondary));
+      color: hsl(var(--muted-foreground));
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      color: hsl(var(--foreground));
+      background: hsl(var(--accent));
+    }
+
+    .filter-btn.active {
+      background: hsl(var(--primary) / 0.15);
+      color: hsl(var(--primary));
+      border-color: hsl(var(--primary) / 0.3);
+    }
+
+    /* Summary Stats */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: hsl(var(--primary));
+    }
+
+    /* Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr 400px;
+      }
+    }
+
+    /* Card */
+    .card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: hsl(var(--primary));
+    }
+
+    .card-body {
+      padding: 1.25rem;
+    }
+
+    /* Locations Grid */
+    .locations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    /* Location Card */
+    .location-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .location-card:hover {
+      border-color: hsl(var(--primary) / 0.4);
+      box-shadow: 0 4px 24px -8px hsl(var(--primary) / 0.2);
+    }
+
+    .location-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .location-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .location-type {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-success {
+      background: hsl(var(--success) / 0.15);
+      color: hsl(var(--success));
+    }
+
+    .badge-warning {
+      background: hsl(var(--warning) / 0.15);
+      color: hsl(var(--warning));
+    }
+
+    .badge-error {
+      background: hsl(var(--destructive) / 0.15);
+      color: hsl(var(--destructive));
+    }
+
+    /* Capacity Bar */
+    .capacity-section {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .capacity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .capacity-label {
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .capacity-value {
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: hsl(var(--foreground));
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: hsl(var(--secondary));
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease-out;
+    }
+
+    .progress-fill.low { background: hsl(var(--success)); }
+    .progress-fill.medium { background: hsl(var(--warning)); }
+    .progress-fill.high { background: hsl(var(--destructive)); }
+
+    /* Products List */
+    .products-list {
+      padding: 0.75rem 1.25rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .product-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid hsl(var(--border) / 0.5);
+    }
+
+    .product-row:last-child {
+      border-bottom: none;
+    }
+
+    .product-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .product-sku {
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: hsl(var(--primary));
+    }
+
+    .product-name {
+      font-size: 0.8125rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .product-qty {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .qty-badge {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.25rem 0.5rem;
+      background: hsl(var(--secondary));
+      border-radius: 0.375rem;
+    }
+
+    .quick-transfer-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: hsl(var(--primary) / 0.1);
+      border: 1px solid hsl(var(--primary) / 0.3);
+      color: hsl(var(--primary));
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .quick-transfer-btn:hover {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .quick-transfer-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Transfer Form */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.375rem;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      font-size: 0.875rem;
+      background: hsl(var(--input));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      color: hsl(var(--foreground));
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+    }
+
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      padding-top: 0.5rem;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-top: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .alert svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
+
+    .alert-success {
+      background: hsl(var(--success) / 0.1);
+      border: 1px solid hsl(var(--success) / 0.3);
+      color: hsl(var(--success));
+    }
+
+    .alert-error {
+      background: hsl(var(--destructive) / 0.1);
+      border: 1px solid hsl(var(--destructive) / 0.3);
+      color: hsl(var(--destructive));
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .alert-message {
+      font-size: 0.875rem;
+      opacity: 0.9;
+    }
+
+    .alert-errors {
+      margin-top: 0.5rem;
+      font-size: 0.8125rem;
+      list-style: none;
+    }
+
+    .alert-errors li {
+      padding: 0.25rem 0;
+    }
+
+    .alert-errors code {
+      font-family: 'JetBrains Mono', monospace;
+      color: hsl(var(--foreground));
+    }
+
+    /* Enhanced Error Details */
+    .error-details {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .error-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: hsl(var(--background) / 0.5);
+      border-radius: calc(var(--radius) - 4px);
+      border: 1px solid hsl(var(--destructive) / 0.2);
+    }
+
+    .error-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .error-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .error-title {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.25rem;
+    }
+
+    .error-detail {
+      font-size: 0.8125rem;
+      color: hsl(var(--muted-foreground));
+      line-height: 1.4;
+    }
+
+    .error-hint {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: hsl(var(--primary));
+      padding: 0.375rem 0.5rem;
+      background: hsl(var(--primary) / 0.1);
+      border-radius: 0.25rem;
+      border-left: 2px solid hsl(var(--primary));
+    }
+
+    /* Hint Box */
+    .hint-box {
+      margin-top: 1rem;
+      padding: 0.875rem;
+      background: hsl(var(--muted) / 0.5);
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .hint-box strong {
+      color: hsl(var(--foreground));
+    }
+
+    .hint-box code {
+      font-family: 'JetBrains Mono', monospace;
+      background: hsl(var(--background) / 0.5);
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-size: 0.6875rem;
+    }
+
+    /* Loading States */
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid hsl(var(--border));
+      border-top-color: hsl(var(--primary));
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      height: 280px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-group {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: hsl(var(--border));
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--muted-foreground));
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7.5 4.27 9 5.15"></path>
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+            <path d="m3.3 7 8.7 5 8.7-5"></path>
+            <path d="M12 22V12"></path>
+          </svg>
+        </div>
+        <div class="header-title">
+          <h1>Inventory Transfer System</h1>
+          <p>Stock management across locations</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" id="refreshBtn" title="Refresh inventory (R)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+            <path d="M16 16h5v5"></path>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search locations or products...">
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="WAREHOUSE">Warehouses</button>
+        <button class="filter-btn" data-filter="RETAIL_STORE">Retail</button>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="summary" id="summaryStats">
+      <div class="stat-card">
+        <div class="stat-label">Total Locations</div>
+        <div class="stat-value" id="statLocations">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Items</div>
+        <div class="stat-value" id="statItems">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unique Products</div>
+        <div class="stat-value" id="statProducts">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. Capacity Used</div>
+        <div class="stat-value" id="statCapacity">—</div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Locations -->
+      <div>
+        <div id="locationsGrid" class="locations-grid">
+          <!-- Location cards rendered here -->
+        </div>
+      </div>
+
+      <!-- Transfer Form -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8L22 12L18 16"></path>
+                <path d="M2 12H22"></path>
+              </svg>
+              Transfer Stock
+            </h2>
+          </div>
+          <div class="card-body">
+            <form id="transferForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="productSelect">Product</label>
+                  <select class="form-select" id="productSelect" required>
+                    <option value="">Select a product…</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="quantityInput">Quantity</label>
+                  <input type="number" class="form-input" id="quantityInput" min="1" step="1" placeholder="e.g., 5" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="sourceSelect">Source Location</label>
+                  <select class="form-select" id="sourceSelect" required>
+                    <option value="">Select location…</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="destSelect">Destination Location</label>
+                  <select class="form-select" id="destSelect" required>
+                    <option value="">Select location…</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-outline" id="swapBtn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3L4 7L8 11"></path>
+                    <path d="M4 7H20"></path>
+                    <path d="M16 21L20 17L16 13"></path>
+                    <path d="M20 17H4"></path>
+                  </svg>
+                  Swap
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m22 2-7 20-4-9-9-4Z"></path>
+                    <path d="M22 2 11 13"></path>
+                  </svg>
+                  Transfer
+                </button>
+              </div>
+            </form>
+
+            <div id="alertContainer"></div>
+
+            <div class="hint-box">
+              <strong>API Format:</strong> 
+              <code>{"productId":12,"sourceLocationId":1,"destinationLocationId":8,"quantity":5}</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let inventory = [];
+    let products = [];
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    // DOM Elements
+    const locationsGrid = document.getElementById('locationsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const transferForm = document.getElementById('transferForm');
+    const productSelect = document.getElementById('productSelect');
+    const sourceSelect = document.getElementById('sourceSelect');
+    const destSelect = document.getElementById('destSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const swapBtn = document.getElementById('swapBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const alertContainer = document.getElementById('alertContainer');
+
+    // Stats Elements
+    const statLocations = document.getElementById('statLocations');
+    const statItems = document.getElementById('statItems');
+    const statProducts = document.getElementById('statProducts');
+    const statCapacity = document.getElementById('statCapacity');
+
+    // API Calls
+    async function fetchInventory() {
+      try {
+        const response = await fetch('/inventory');
+        if (!response.ok) throw new Error('Failed to fetch inventory');
+        inventory = await response.json();
+        extractProducts();
+        updateStats();
+        renderLocations();
+        populateSelects();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        showAlert('error', 'Failed to load inventory', error.message);
+        renderLoadingState();
+      }
+    }
+
+    async function submitTransfer(data) {
+      try {
+        const response = await fetch('/transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        let result;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          result = await response.json();
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response:', text);
+          result = { message: 'Transfer failed', errors: [] };
+        }
+        
+        console.log('Transfer response:', { status: response.status, ok: response.ok, result });
+        
+        if (response.ok) {
+          showAlert('success', 'Transfer successful', result.message);
+          transferForm.reset();
+          await fetchInventory();
+        } else {
+          // Handle various error response formats
+          const errors = result.errors || [];
+          const message = result.message || 'Transfer failed';
+          
+          console.log('Error details:', { message, errors });
+          
+          // If we have a message but no errors array, create one from the message
+          if (errors.length === 0 && message && message !== 'Transfer failed' && message !== 'Validation error') {
+            errors.push({ field: 'transfer', message: message });
+          }
+          
+          showAlert('error', message, null, errors);
+        }
+      } catch (error) {
+        console.error('Transfer error:', error);
+        showAlert('error', 'An unexpected error occurred', error.message);
+      }
+    }
+
+    // Extract unique products from inventory
+    function extractProducts() {
+      const productMap = new Map();
+      inventory.forEach(location => {
+        location.products.forEach(product => {
+          if (!productMap.has(product.productId)) {
+            productMap.set(product.productId, {
+              productId: product.productId,
+              sku: product.sku,
+              name: product.name
+            });
+          }
+        });
+      });
+      products = Array.from(productMap.values()).sort((a, b) => a.sku.localeCompare(b.sku));
+    }
+
+    // Update summary stats
+    function updateStats() {
+      const totalItems = inventory.reduce((sum, loc) => sum + loc.totalQuantity, 0);
+      const totalCapacity = inventory.reduce((sum, loc) => sum + (loc.capacity || 0), 0);
+      const avgCapacity = totalCapacity > 0 
+        ? Math.round((totalItems / totalCapacity) * 100) 
+        : 0;
+
+      statLocations.textContent = inventory.length;
+      statItems.textContent = totalItems.toLocaleString();
+      statProducts.textContent = products.length;
+      statCapacity.textContent = avgCapacity + '%';
+    }
+
+    // Get capacity status
+    function getCapacityStatus(current, max) {
+      const percent = max ? (current / max) * 100 : 0;
+      if (percent >= 90) return { label: 'Critical', class: 'badge-error', barClass: 'high' };
+      if (percent >= 70) return { label: 'Warning', class: 'badge-warning', barClass: 'medium' };
+      return { label: 'Healthy', class: 'badge-success', barClass: 'low' };
+    }
+
+    // Render locations
+    function renderLocations() {
+      const filtered = inventory.filter(location => {
+        const matchesFilter = currentFilter === 'all' || location.type === currentFilter;
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = !query || 
+          location.name.toLowerCase().includes(query) ||
+          location.products.some(p => 
+            p.name.toLowerCase().includes(query) || 
+            p.sku.toLowerCase().includes(query)
+          );
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        locationsGrid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m7.5 4.27 9 5.15"></path>
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+              <path d="m3.3 7 8.7 5 8.7-5"></path>
+              <path d="M12 22V12"></path>
+            </svg>
+            <h3>No locations found</h3>
+            <p>Try adjusting your search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      locationsGrid.innerHTML = filtered.map(location => {
+        const status = getCapacityStatus(location.totalQuantity, location.capacity);
+        const percent = location.capacity ? Math.round((location.totalQuantity / location.capacity) * 100) : 0;
+        
+        return `
+          <div class="location-card">
+            <div class="location-header">
+              <div class="location-info">
+                <h3>${escapeHtml(location.name)}</h3>
+                <span class="location-type">${location.type.replace('_', ' ')}</span>
+              </div>
+              <span class="badge ${status.class}">${status.label}</span>
+            </div>
+            <div class="capacity-section">
+              <div class="capacity-header">
+                <span class="capacity-label">Capacity</span>
+                <span class="capacity-value">${location.totalQuantity} / ${location.capacity || '∞'}</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill ${status.barClass}" style="width: ${percent}%"></div>
+              </div>
+            </div>
+            <div class="products-list">
+              ${location.products.map(product => `
+                <div class="product-row">
+                  <div class="product-info">
+                    <span class="product-sku">${escapeHtml(product.sku)}</span>
+                    <span class="product-name">${escapeHtml(product.name)}</span>
+                  </div>
+                  <div class="product-qty">
+                    <span class="qty-badge">${product.quantity}</span>
+                    <button class="quick-transfer-btn" 
+                            onclick="prefillTransfer(${product.productId}, ${location.id})"
+                            title="Quick transfer">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8L22 12L18 16"></path>
+                        <path d="M2 12H22"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render loading skeleton
+    function renderLoadingState() {
+      locationsGrid.innerHTML = Array(4).fill(0).map(() => `
+        <div class="skeleton skeleton-card"></div>
+      `).join('');
+    }
+
+    // Populate select dropdowns
+    function populateSelects() {
+      // Products
+      productSelect.innerHTML = '<option value="">Select a product…</option>' +
+        products.map(p => `<option value="${p.productId}">${escapeHtml(p.sku)} — ${escapeHtml(p.name)}</option>`).join('');
+
+      // Locations
+      const locationOptions = '<option value="">Select location…</option>' +
+        inventory.map(l => `<option value="${l.id}">${escapeHtml(l.name)} — ${l.type.replace('_', ' ')}</option>`).join('');
+      
+      sourceSelect.innerHTML = locationOptions;
+      destSelect.innerHTML = locationOptions;
+    }
+
+    // Quick transfer prefill
+    function prefillTransfer(productId, sourceLocationId) {
+      productSelect.value = productId;
+      sourceSelect.value = sourceLocationId;
+      quantityInput.value = 1;
+      
+      // Auto-select first different location
+      const otherLocation = inventory.find(l => l.id !== sourceLocationId);
+      if (otherLocation) {
+        destSelect.value = otherLocation.id;
+      }
+      
+      showAlert('success', 'Form pre-filled', 'Adjust quantity and submit to transfer.');
+      transferForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Get user-friendly error description based on error type
+    function getErrorDescription(error) {
+      const field = error.field;
+      const message = error.message.toLowerCase();
+      
+      // Insufficient stock
+      if (message.includes('insufficient stock')) {
+        const match = error.message.match(/Available (\d+), requested (\d+)/i);
+        if (match) {
+          return {
+            icon: '📦',
+            title: 'Insufficient Stock',
+            detail: `Only ${match[1]} units available at source, but ${match[2]} requested.`,
+            hint: 'Reduce the transfer quantity or choose a different source location.'
+          };
+        }
+      }
+      
+      // Capacity exceeded
+      if (message.includes('capacity exceeded')) {
+        const match = error.message.match(/Current total (\d+), maximum capacity (\d+), requested additional (\d+)/i);
+        if (match) {
+          const available = parseInt(match[2]) - parseInt(match[1]);
+          return {
+            icon: '🚫',
+            title: 'Destination Capacity Exceeded',
+            detail: `Destination can only accept ${Math.max(0, available)} more units (${match[1]}/${match[2]} used).`,
+            hint: 'Reduce the quantity or choose a different destination.'
+          };
+        }
+      }
+      
+      // Product not found
+      if (field === 'productId' && message.includes('not found')) {
+        const match = error.message.match(/Product (\d+)/i);
+        return {
+          icon: '❓',
+          title: 'Product Not Found',
+          detail: match ? `Product ID ${match[1]} does not exist.` : 'The selected product was not found.',
+          hint: 'Refresh the page or select a different product.'
+        };
+      }
+      
+      // Location not found
+      if ((field === 'sourceLocationId' || field === 'destinationLocationId') && message.includes('not found')) {
+        const match = error.message.match(/Location (\d+)/i);
+        const locationType = field === 'sourceLocationId' ? 'Source' : 'Destination';
+        return {
+          icon: '📍',
+          title: `${locationType} Location Not Found`,
+          detail: match ? `Location ID ${match[1]} does not exist.` : 'The selected location was not found.',
+          hint: 'Refresh the page or select a different location.'
+        };
+      }
+      
+      // Same location error
+      if (message.includes('different from')) {
+        return {
+          icon: '🔄',
+          title: 'Same Location Selected',
+          detail: 'Source and destination locations must be different.',
+          hint: 'Select a different destination location.'
+        };
+      }
+      
+      // Invalid integer / positive integer
+      if (message.includes('positive integer')) {
+        const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+        return {
+          icon: '🔢',
+          title: 'Invalid Value',
+          detail: `${fieldName} must be a positive whole number.`,
+          hint: 'Enter a valid number greater than zero.'
+        };
+      }
+      
+      // Default fallback
+      return {
+        icon: '⚠️',
+        title: 'Validation Error',
+        detail: error.message,
+        hint: null
+      };
+    }
+
+    // Show alert
+    function showAlert(type, title, message, errors = null) {
+      const iconSuccess = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+      const iconError = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+      let errorsHtml = '';
+      if (errors && errors.length > 0) {
+        errorsHtml = `<div class="error-details">
+          ${errors.map(e => {
+            const desc = getErrorDescription(e);
+            return `
+              <div class="error-item">
+                <span class="error-icon">${desc.icon}</span>
+                <div class="error-content">
+                  <div class="error-title">${escapeHtml(desc.title)}</div>
+                  <div class="error-detail">${escapeHtml(desc.detail)}</div>
+                  ${desc.hint ? `<div class="error-hint">💡 ${escapeHtml(desc.hint)}</div>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>`;
+      }
+
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type}">
+          ${type === 'success' ? iconSuccess : iconError}
+          <div class="alert-content">
+            <div class="alert-title">${escapeHtml(title)}</div>
+            ${message ? `<div class="alert-message">${escapeHtml(message)}</div>` : ''}
+            ${errorsHtml}
+          </div>
+        </div>
+      `;
+
+      // Auto-hide success alerts
+      if (type === 'success') {
+        setTimeout(() => {
+          alertContainer.innerHTML = '';
+        }, 5000);
+      }
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Event Listeners
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderLocations();
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderLocations();
+      });
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      renderLoadingState();
+      fetchInventory();
+    });
+
+    swapBtn.addEventListener('click', () => {
+      const temp = sourceSelect.value;
+      sourceSelect.value = destSelect.value;
+      destSelect.value = temp;
+    });
+
+    transferForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertContainer.innerHTML = '';
+
+      const productId = parseInt(productSelect.value);
+      const sourceLocationId = parseInt(sourceSelect.value);
+      const destinationLocationId = parseInt(destSelect.value);
+      const quantity = parseInt(quantityInput.value);
+
+      // Client-side validation
+      const errors = [];
+      if (!productId) errors.push({ field: 'productId', message: 'Select a product' });
+      if (!sourceLocationId) errors.push({ field: 'sourceLocationId', message: 'Select a source location' });
+      if (!destinationLocationId) errors.push({ field: 'destinationLocationId', message: 'Select a destination location' });
+      if (!quantity || quantity <= 0) errors.push({ field: 'quantity', message: 'Quantity must be a positive integer' });
+      if (sourceLocationId && destinationLocationId && sourceLocationId === destinationLocationId) {
+        errors.push({ field: 'destinationLocationId', message: 'Destination must be different from source' });
+      }
+
+      if (errors.length > 0) {
+        showAlert('error', 'Validation error', null, errors);
+        return;
+      }
+
+      // Submit
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="loading-spinner"></div> Transferring…';
+
+      await submitTransfer({ productId, sourceLocationId, destinationLocationId, quantity });
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m22 2-7 20-4-9-9-4Z"></path>
+          <path d="M22 2 11 13"></path>
+        </svg>
+        Transfer
+      `;
+    });
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'r' && !e.ctrlKey && !e.metaKey && 
+          document.activeElement.tagName !== 'INPUT' && 
+          document.activeElement.tagName !== 'SELECT') {
+        renderLoadingState();
+        fetchInventory();
+      }
+    });
+
+    // Initialize
+    renderLoadingState();
+    fetchInventory();
+  </script>
+</body>
+</html>
